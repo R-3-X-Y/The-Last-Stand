@@ -77,6 +77,13 @@ class Game():
         text_rect = text_surface.get_rect()
         text_rect.center = (x,y)
         self.display.blit(text_surface,text_rect)
+    
+    def draw_text_black(self, text, size, x, y ):
+        font = pygame.font.Font(self.font_name,size)
+        text_surface = font.render(text, True, self.BLACK)
+        text_rect = text_surface.get_rect()
+        text_rect.center = (x,y)
+        self.display.blit(text_surface,text_rect)
 
 
 

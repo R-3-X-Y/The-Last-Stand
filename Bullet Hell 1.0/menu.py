@@ -148,11 +148,7 @@ class ControlsMenu(Menu):
             self.game.draw_text('Controls', 20, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 - 20)
             self.game.draw_text('Movement   [WASD] or Arrow Keys', 15, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 + 10)
             self.game.draw_text('Shoot   Left Mouse Button', 15, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 + 30)
-            self.game.draw_text('Change Shot', 15, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 + 50)
-            self.game.draw_text('1 for Regular', 15, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 + 70)
-            self.game.draw_text('2 for Sniper', 15, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 + 90)
-            self.game.draw_text('3 for Homing', 15, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 + 110)
-            self.game.draw_text('Dash   [SPACEBAR]', 15, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 + 130)
+            self.game.draw_text('Dash   [SPACEBAR]', 15, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 + 50)
             self.blit_screen()
 
 class CreditsMenu(Menu):
@@ -185,7 +181,15 @@ class PlayGame(Menu):
         self.game.playing = True
         dialog = True
         dialog_stage = 0
+        clock = pygame.time.Clock()
+        self.run_display = True
+        self.gameover = False
         while self.run_display:
+            
+            #print(str(int(clock.get_fps())))
+            
+            clock.tick(100)
+
             self.game.check_events()
             self.game.display.fill([0, 0, 0])
             pygame.draw.rect(self.game.display, self.game.WHITE, pygame.Rect(0, self.game.DISPLAY_H - 50, self.game.DISPLAY_W, 50))
@@ -196,7 +200,7 @@ class PlayGame(Menu):
             
             pygame.draw.rect(self.game.display, [255, 0, 0, 255], player_health_bar)
             pygame.draw.rect(self.game.display, self.game.BLACK, player_health_bar_outline, width = 5, border_radius = 5)
-            self.game.draw_text('YOU', 10, player_health_bar_outline.left + 20, player_health_bar_outline.centery)
+            self.game.draw_text_black('YOU', 10, player_health_bar_outline.centerx, player_health_bar_outline.centery)
 
             enemy_health_bar_outline = player_health_bar_outline
             enemy_health_bar_outline.left = 280
@@ -205,13 +209,17 @@ class PlayGame(Menu):
 
             pygame.draw.rect(self.game.display, [255, 255, 0], enemy_health_bar)
             pygame.draw.rect(self.game.display, self.game.BLACK, enemy_health_bar_outline, width = 5, border_radius = 5)
+            self.game.draw_text_black(self.enemy.name, 10, enemy_health_bar_outline.centerx, enemy_health_bar_outline.centery)
 
             self.player.player_rect.topleft = [self.player.x, self.player.y]
+            
             for projectile in self.enemy.projectiles:
                 projectile.projectile_rect.topleft = [projectile.x, projectile.y]
+            for projectile in self.player.bullets:
+                projectile.projectile_rect.topleft = [projectile.x, projectile.y]
             if self.player.spawn_delay > 0:
-                pygame.draw.circle(self.game.display, self.game.WHITE, [self.player.x, self.player.y], self.player.spawn_delay / 4, width = 10)
-                self.player.spawn_delay -= 2
+                pygame.draw.circle(self.game.display, self.game.WHITE, [self.player.player_rect.centerx, self.player.player_rect.centery], self.player.spawn_delay / 4, width = 10)
+                self.player.spawn_delay -= 20
             else:
                 if (self.game.UP_KEY) and (self.player.player_rect.top > 0):
                     self.player.y -= self.player.move
@@ -221,6 +229,8 @@ class PlayGame(Menu):
                     self.player.x -= self.player.move
                 if (self.game.RIGHT_KEY) and (self.player.player_rect.right < self.game.DISPLAY_W):
                     self.player.x += self.player.move
+                if self.game.SHOOT and not dialog:
+                    self.player.fire()
             if dialog:
                 if dialog_stage == 0:
                     self.game.draw_text('Hello There Little Color', 15, self.enemy.boss_rect.centerx, self.enemy.boss_rect.bottom + 30)
@@ -244,29 +254,58 @@ class PlayGame(Menu):
             else:
                 if self.enemy.attack_cd == 0:
                     if self.enemy.stage == 0:
-                        self.enemy.attack_type = random.randint(0, 2)
+                        self.enemy.attack_type = random.randint(1, 3)
                         if self.enemy.attack_type == 1:
-                            self.enemy.stage = 1000
+                            self.enemy.stage = 500
+                        elif self.enemy.attack_type == 2:
+                            self.enemy.stage = 300
+                        elif self.enemy.attack_type == 3:
+                            self.enemy.stage = 300
                     if self.enemy.attack_type == 1:
                         self.enemy.attack1(self.game1, self.enemy.stage)
                         self.enemy.stage -= 1
                         if self.enemy.stage <= 0:
+                            self.enemy.attack_rotation = 0
                             self.enemy.stage = 0
                             self.enemy.attack_type = None
-                            self.enemy.attack_cd = 10000
+                            self.enemy.attack_cd = 100
+                    elif self.enemy.attack_type == 2:
+                        self.enemy.attack2(self.game1, self.enemy.stage)
+                        self.enemy.stage -= 1
+                        if self.enemy.stage <= 0:
+                            self.enemy.attack_rotation = 0
+                            self.enemy.stage = 0
+                            self.enemy.attack_type = None
+                            self.enemy.attack_cd = 300
+                    elif self.enemy.attack_type == 3:
+                        self.enemy.attack3(self.game, self.enemy.stage, self.player.player_rect.centerx, self.player.player_rect.centery)
+                        self.enemy.stage -= 1
+                        if self.enemy.stage <= 0:
+                            self.enemy.attack_rotation = 0
+                            self.enemy.stage = 0
+                            self.enemy.attack_type = None
+                            self.enemy.attack_cd = 200
                 else:
                     self.enemy.attack_cd -= 1
             self.move_projectiles()
             self.game.display.blit(self.player.player_sprite, [self.player.x,self.player.y])
             for projectile in self.enemy.projectiles:
                 self.game.display.blit(projectile.projectile_sprite, [projectile.x, projectile.y])
+            for projectile in self.player.bullets:
+                self.game.display.blit(projectile.projectile_sprite, [projectile.x, projectile.y])
             self.game.display.blit(self.enemy.enemy_sprite, [self.enemy.x, self.enemy.y])
             self.blit_screen()
+        self.game.playing = False
+        self.enemy.projectiles.clear()
+        self.enemy.health = self.enemy.max_health
+        self.player.bullets.clear()
+        self.player.health = self.player.max_health
 
     def move_projectiles(self):
         for projectile in self.enemy.projectiles:
             projectile.x += projectile.dx
             projectile.y += projectile.dy
+            projectile.lifetime -= 1
             if projectile.projectile_rect.bottom < 0:
                 self.enemy.projectiles.remove(projectile)
             elif projectile.projectile_rect.top > self.game.DISPLAY_H - 50:
@@ -279,9 +318,38 @@ class PlayGame(Menu):
                 self.player.health -= 1
                 self.enemy.projectiles.remove(projectile)
                 if self.player.health <= 0:
+                    #change to game over screen
                     pygame.quit()
                     sys.exit()
-                pass
+                    pass
+            if projectile.lifetime <= 0:
+                self.enemy.projectiles.remove(projectile)
+        for projectile in self.player.bullets:
+            projectile.x += projectile.dx
+            projectile.y += projectile.dy
+            projectile.lifetime -= 1
+            if projectile.projectile_rect.bottom < 0:
+                self.player.bullets.remove(projectile)
+            elif projectile.projectile_rect.top > self.game.DISPLAY_H - 50:
+                self.player.bullets.remove(projectile)
+            elif projectile.projectile_rect.right < 0:
+                self.player.bullets.remove(projectile)
+            elif projectile.projectile_rect.left > self.game.DISPLAY_W:
+                self.player.bullets.remove(projectile)
+            elif projectile.projectile_rect.colliderect(self.enemy.boss_rect):
+                self.enemy.health -= 1
+                self.player.bullets.remove(projectile)
+                if self.enemy.health <= 0:
+                    self.game.curr_menu = self.game.main_menu
+                    self.gameover = True
+            elif projectile.lifetime <= 0:
+                self.player.bullets.remove(projectile)
+            if self.gameover:
+                #change to game over screen
+                self.game.playing = False
+                self.run_display = False
+    
+
 
 
 

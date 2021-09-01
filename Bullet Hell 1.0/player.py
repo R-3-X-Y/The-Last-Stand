@@ -1,4 +1,7 @@
 import pygame
+import math
+from projectile import Projectile
+from pygame.math import Vector2
 
 class Play():
     def __init__(self, game):
@@ -7,10 +10,11 @@ class Play():
         self.max_health = 5
         self.health = 5
         self.lives = 3
-        self.move = 0.1
+        self.move = 1
         self.spawn_delay = 400
-        self.attack_type = 0
         self.attack_cd = 0
+        self.bullet_speed = 10
+        self.bullets = []
         self.x = 100
         self.y = 100
         self.player_rect = pygame.Rect(self.x, self.y, 10, 10)
@@ -20,8 +24,18 @@ class Play():
         if self.attack_cd > 0:
             self.attack_cd -= 1
     
-    def fire(self, attack_type):
-        self.mouseX, self.mouseY = pygame.mouse.get_pos()
+    def fire(self):
+        x1, y1 = self.player_rect.center
+        x2, y2 = pygame.mouse.get_pos()
+        angle = math.degrees(math.atan2(y2-y1, x2-x1))
+        #position = self.player_rect.center
+        vector = Vector2()
+        vector.from_polar((self.bullet_speed, angle))
+        self.bullets.append(Projectile(self.game, self.player_rect.centerx, self.player_rect.centery, vector[0], vector[1], 'Bullet Hell 1.0/Sprites/player_bullet.png', 20))
+        
+        
+
+
 
 
 
