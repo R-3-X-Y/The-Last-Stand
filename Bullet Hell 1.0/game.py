@@ -1,11 +1,12 @@
 import pygame
 import sys
 from menu import *
-
+from enemies import *
 #create game class
 class Game():
     def __init__(self):
         pygame.init()
+        pygame.mixer.init()
         self.running, self.playing = True, False
         #prepare dispay
         self.UP_KEY, self.DOWN_KEY, self.LEFT_KEY, self.RIGHT_KEY, self.DASH_KEY, self.SHOOT, self.START_KEY, self.BACK_KEY = False, False, False, False, False, False, False, False
@@ -14,10 +15,26 @@ class Game():
         self.window = pygame.display.set_mode(((self.DISPLAY_W,self.DISPLAY_H)))
         pygame.display.set_caption('Bullet Hell Warrior')
         #set font
-        self.font_name = 'Bullet Hell 1.0/Fonts/8-BIT WONDER.TTF'
+        self.font_name = 'Bullet Hell 1.0/Fonts/joystix.monospace.ttf'
         #self.font_name = pygame.font.get_default_font()
         #set colors
         self.BLACK, self.WHITE = (0, 0, 0), (255, 255, 255)
+        #set sounds
+        self.effect_volume = 100
+        self.music_volume = 10
+        self.select_sound = pygame.mixer.Sound('Bullet Hell 1.0/Sound Effects/menu_forward.wav')
+        self.select_sound.set_volume(0.05)
+        self.back_sound = pygame.mixer.Sound('Bullet Hell 1.0/Sound Effects/menu_backward.wav')
+        self.back_sound.set_volume(0.05)
+        self.fire_sound = pygame.mixer.Sound('Bullet Hell 1.0/Sound Effects/shoot.wav')
+        self.fire_sound.set_volume(0.1)
+        self.text_sound = pygame.mixer.Sound('Bullet Hell 1.0/Sound Effects/text.wav')
+        self.text_sound.set_volume(0.1)
+        self.music1 = pygame.mixer.music.load("Bullet Hell 1.0/Music/23. Heaven's Hell-Sent Gift.wav")
+        self.sound_effects = pygame.mixer.Channel(1)
+        self.sound_effects.set_volume(self.effect_volume / 100)
+        pygame.mixer.music.set_volume(self.music_volume / 100)
+        pygame.mixer.music.play(-1, fade_ms = 1000)
         #load menus
         self.main_menu = MainMenu(self)
         self.options = OptionsMenu(self)
@@ -27,15 +44,26 @@ class Game():
         self.play_game = PlayGame(self)
         self.lose = DeathMenu(self)
         self.win = WinMenu(self)
+        self.stats = StatsMenu(self)
+        self.curr_enemy = GuideBook(self)
         self.curr_menu = self.main_menu
-        
+        #player stats for current enemy
+        self.health_lost = 0
+        self.shots_fired = 0
+        self.shots_hit = 0
+        #player stats for session
+        self.total_health_lost = 0
+        self.total_shots_fired = 0
+        self.total_shots_hit = 0
+        #player gameover
+        self.player_died = False
     #check key presses
     def check_events(self):
         for event in pygame.event.get():
             #stop the program if the window is closed
             if event.type == pygame.QUIT:
-                self.running, self.playing = False, False
-                self.curr_menu.run_display = False
+                pygame.quit()
+                sys.exit()
             #check key downs
             if event.type == pygame.KEYDOWN:
                 #quit game on escape key
