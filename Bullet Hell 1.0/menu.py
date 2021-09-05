@@ -233,7 +233,7 @@ class CreditsMenu(Menu):
             self.game.draw_text('Art: R3XY', 15, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 + 40)
             self.game.draw_text('Menu system is from a tutorial', 15, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 + 70)
             self.game.draw_text('by Christial Duenas on Youtube', 15, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 + 100)
-            self.game.draw_text('Music: DM Dokuro', 15, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 + 130)
+            self.game.draw_text('Music: R3XY', 15, self.game.DISPLAY_W / 2, self.game.DISPLAY_H / 2 + 130)
             self.blit_screen()
 
 #create death menu

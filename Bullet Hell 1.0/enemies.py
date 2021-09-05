@@ -14,7 +14,7 @@ class GuideBook():
         self.game = game
         self.projectiles = []
         self.max_health = 100
-        self.health = 1
+        self.health = 100
         self.move = 0.5
         self.attack_cd = 0
         self.x = 250
