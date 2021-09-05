@@ -30,7 +30,7 @@ class Game():
         self.fire_sound.set_volume(0.1)
         self.text_sound = pygame.mixer.Sound('Bullet Hell 1.0/Sound Effects/text.wav')
         self.text_sound.set_volume(0.1)
-        self.music1 = pygame.mixer.music.load("Bullet Hell 1.0/Music/23. Heaven's Hell-Sent Gift.wav")
+        self.music1 = pygame.mixer.music.load("Bullet Hell 1.0/Music/music1.wav")
         self.sound_effects = pygame.mixer.Channel(1)
         self.sound_effects.set_volume(self.effect_volume / 100)
         pygame.mixer.music.set_volume(self.music_volume / 100)
